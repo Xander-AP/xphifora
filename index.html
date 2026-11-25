@@ -10,16 +10,19 @@
   :root {
     --bg: #f6f4ef; --card: #ffffff; --ink: #1d1d1f; --muted: #6b6b70;
     --accent: #1f2a44; --accent-soft: #e7eaf2; --line: #e4e1da; --gold: #b5893b;
+    --ok: #2e7d4f; --ko: #c0392b;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #15171c; --card: #1e2128; --ink: #ecebe8; --muted: #9a9aa2;
-            --accent: #c9d3ec; --accent-soft: #2a3040; --line: #2d3039; --gold: #d8ae62; }
+            --accent: #c9d3ec; --accent-soft: #2a3040; --line: #2d3039; --gold: #d8ae62;
+            --ok: #5cc28a; --ko: #e5776b; }
   }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body { margin: 0; background: var(--bg); color: var(--ink);
          font: 17px/1.55 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 16px 14px 60px; }
+  button { font-family: inherit; cursor: pointer; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px 14px 90px; }
 
   /* Verrou */
   #lock { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -29,13 +32,26 @@
   #lock p { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
   #lock input { width: 100%; font-size: 18px; padding: 12px 14px; border-radius: 10px;
                 border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
-  #lock button, .btn { margin-top: 12px; width: 100%; font-size: 17px; padding: 12px; border: 0;
-                border-radius: 10px; background: var(--accent); color: var(--bg); font-weight: 600; }
-  #err { color: #c0392b; min-height: 1.4em; margin-top: 8px; font-size: 15px; }
+  .btn { margin-top: 12px; width: 100%; font-size: 17px; padding: 13px; border: 0;
+         border-radius: 12px; background: var(--accent); color: var(--bg); font-weight: 600; }
+  .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+  #err { color: var(--ko); min-height: 1.4em; margin-top: 8px; font-size: 15px; }
   #app { display: none; }
 
   header h1 { font-family: Georgia, "Times New Roman", serif; font-size: 30px; margin: 8px 0 2px; }
-  header .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  header .sub { color: var(--muted); font-size: 14px; margin-bottom: 10px; }
+
+  /* Onglets (barre en bas, façon appli) */
+  nav.tabs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 5; display: flex;
+             background: var(--card); border-top: 1px solid var(--line);
+             padding-bottom: env(safe-area-inset-bottom); }
+  nav.tabs button { flex: 1; border: 0; background: none; color: var(--muted); padding: 10px 4px 12px;
+                    font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  nav.tabs button .ic { font-size: 20px; line-height: 1; }
+  nav.tabs button.on { color: var(--accent); }
+  .view { display: none; }
+  .view.on { display: block; }
+
   .tools { display: flex; gap: 8px; margin-bottom: 14px; position: sticky; top: 0; z-index: 2;
            background: var(--bg); padding: 8px 0; }
   .tools input { flex: 1; min-width: 0; font-size: 16px; padding: 10px 12px; border-radius: 10px;
@@ -56,20 +72,58 @@
   .body { padding: 6px 18px 16px; }
   .def { background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; margin: 12px 0; font-size: 16px; }
   .def b { color: var(--accent); }
-  h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
-       margin: 18px 0 6px; }
+  h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 18px 0 6px; }
   .auteur { padding: 10px 0; border-bottom: 1px solid var(--line); }
   .auteur:last-child { border-bottom: 0; }
   .auteur .nom { font-weight: 700; color: var(--accent); display: block; margin-bottom: 2px; }
   .cit { font-style: italic; color: var(--muted); margin: 4px 0; }
-  ul { margin: 6px 0; padding-left: 20px; }
-  li { margin: 3px 0; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
   .idee { border-left: 3px solid var(--gold); padding: 4px 0 4px 10px; margin: 10px 0; }
   .idee b { color: var(--gold); }
   mark { background: #f7d774; color: #000; border-radius: 3px; }
   .empty { color: var(--muted); text-align: center; padding: 30px 0; display: none; }
   footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 24px; }
   footer button { background: none; border: 0; color: var(--muted); text-decoration: underline; font-size: 13px; }
+
+  /* Flashcards */
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .panel h2 { font-size: 17px; margin: 0 0 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px;
+          padding: 7px 12px; font-size: 14px; }
+  .chip.on { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .chip small { opacity: .7; margin-left: 4px; }
+  .row { display: flex; gap: 8px; }
+  .row .btn { margin-top: 0; }
+  .stats { display: flex; gap: 10px; margin-bottom: 12px; }
+  .stat { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; }
+  .stat b { display: block; font-size: 22px; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .stat.ok b { color: var(--ok); } .stat.ko b { color: var(--ko); }
+
+  #play { display: none; }
+  .progress { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin: 6px 0 14px; }
+  .progress i { display: block; height: 100%; background: var(--gold); width: 0; transition: width .25s; }
+  .topline { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 14px; }
+  .topline button { background: none; border: 0; color: var(--muted); font-size: 14px; padding: 4px 0; }
+  .card { perspective: 1200px; min-height: 320px; margin-bottom: 14px; }
+  .card-in { display: grid; min-height: 320px; transition: transform .45s; transform-style: preserve-3d; }
+  .card.flip .card-in { transform: rotateY(180deg); }
+  .face { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+          background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px 20px;
+          display: flex; flex-direction: column; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+  .face.back { transform: rotateY(180deg); }
+  .face .tag { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+  .face .q { font-family: Georgia, "Times New Roman", serif; font-size: 25px; line-height: 1.3; margin: auto 0; text-align: center; }
+  .face .a { font-size: 17px; }
+  .face .hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .answer { display: none; }
+  .answer.on { display: flex; }
+  .btn.ok { background: var(--ok); color: #fff; }
+  .btn.ko { background: var(--ko); color: #fff; }
+  #done { display: none; text-align: center; }
+  #done .big { font-family: Georgia, serif; font-size: 44px; margin: 10px 0 0; }
 </style>
 </head>
 <body>
@@ -79,56 +133,132 @@
     <h1>Fiches de philo</h1>
     <p>Entre le mot de passe pour accéder aux fiches.</p>
     <input id="pwd" type="password" placeholder="Mot de passe" autofocus>
-    <button type="submit">Entrer</button>
+    <button class="btn" type="submit">Entrer</button>
     <div id="err"></div>
   </form>
 </div>
 
 <div id="app" class="wrap">
   <header>
-    <h1>Fiches de philo</h1>
-    <div class="sub" id="count"></div>
+    <h1 id="title">Fiches de philo</h1>
+    <div class="sub" id="sub"></div>
   </header>
-  <div class="tools">
-    <input id="q" type="search" placeholder="Chercher un auteur, une notion…">
-    <button id="toggleAll">Tout déplier</button>
-  </div>
-  <main id="list"></main>
-  <div class="empty" id="empty">Aucun résultat.</div>
+
+  <!-- FICHES -->
+  <section class="view on" id="v-fiches">
+    <div class="tools">
+      <input id="q" type="search" placeholder="Chercher un auteur, une notion…">
+      <button id="toggleAll">Tout déplier</button>
+    </div>
+    <main id="list"></main>
+    <div class="empty" id="empty">Aucun résultat.</div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section class="view" id="v-cards">
+    <div id="setup">
+      <div class="stats">
+        <div class="stat ok"><b id="nOk">0</b><span>sues</span></div>
+        <div class="stat ko"><b id="nKo">0</b><span>à revoir</span></div>
+        <div class="stat"><b id="nNew">0</b><span>jamais vues</span></div>
+      </div>
+      <div class="panel">
+        <h2>Thèmes</h2>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="panel">
+        <h2>Quelles cartes ?</h2>
+        <div class="chips" id="modes">
+          <button class="chip on" data-mode="all">Toutes</button>
+          <button class="chip" data-mode="todo">À revoir + jamais vues</button>
+          <button class="chip" data-mode="ko">Seulement à revoir</button>
+        </div>
+      </div>
+      <button class="btn" id="start">Commencer</button>
+      <button class="btn ghost" id="reset">Remettre la progression à zéro</button>
+    </div>
+
+    <div id="play">
+      <div class="topline"><span id="pos"></span><button id="quit">✕ Arrêter</button></div>
+      <div class="progress"><i id="bar"></i></div>
+      <div class="card" id="card">
+        <div class="card-in">
+          <div class="face front"><div class="tag" id="fTag"></div><div class="q" id="fQ"></div><div class="hint">Touche la carte pour voir la réponse</div></div>
+          <div class="face back"><div class="tag" id="bTag"></div><div class="a" id="bA"></div></div>
+        </div>
+      </div>
+      <div class="row answer" id="answer">
+        <button class="btn ko" id="bKo">À revoir</button>
+        <button class="btn ok" id="bOk">Je savais</button>
+      </div>
+    </div>
+
+    <div id="done">
+      <div class="big" id="score"></div>
+      <p id="doneTxt"></p>
+      <button class="btn" id="again">Revoir les ratées</button>
+      <button class="btn ghost" id="back">Retour</button>
+    </div>
+  </section>
+
+  <!-- METHODO -->
+  <section class="view" id="v-methodo">
+    <main id="methodo"></main>
+  </section>
+
   <footer><button id="logout">Verrouiller</button></footer>
 </div>
 
+<nav class="tabs" id="tabs" style="display:none">
+  <button data-v="fiches" class="on"><span class="ic">📖</span>Fiches</button>
+  <button data-v="cards"><span class="ic">🃏</span>Flashcards</button>
+  <button data-v="methodo"><span class="ic">🧭</span>Méthodo</button>
+</nav>
+
 <script src="data.js"></script>
+<script src="methodo.js"></script>
 <script>
 // ===== MOT DE PASSE =====
-// Ce n'est pas le mot de passe en clair : c'est son empreinte SHA-256.
-// Pour le changer, remplace la valeur par l'empreinte du nouveau mot de passe
-// (commande : echo -n 'ton_mot_de_passe' | shasum -a 256).
-const PASSWORD_HASH = "ac26cd88ef361bfd6735f9666d800997ee5feec4c0234aa0f12fabcccc5f7a79";
+// Empreinte SHA-256 du mot de passe (pas le mot de passe en clair).
+// Pour le changer : echo -n 'nouveau_mdp' | shasum -a 256, puis remplacer la valeur.
+const PASSWORD_HASH = "e7db9fbbf723da5ed3c05ea29f84ec944ebcc0019a36bbb4625ffe2693b3510c";
 const KEY = "fiches-philo-ok";
+const PROG = "fiches-philo-progress";
+
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function save(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
 
 async function sha256(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
-function store(get, val) {
-  try { return get ? localStorage.getItem(KEY) : (val === null ? localStorage.removeItem(KEY) : localStorage.setItem(KEY, val)); }
-  catch (e) { return null; }
-}
 function unlock() {
   document.getElementById("lock").style.display = "none";
   document.getElementById("app").style.display = "block";
+  document.getElementById("tabs").style.display = "flex";
 }
 document.getElementById("lockForm").addEventListener("submit", async e => {
   e.preventDefault();
   const h = await sha256(document.getElementById("pwd").value);
-  if (h === PASSWORD_HASH) { store(false, h); unlock(); }
+  if (h === PASSWORD_HASH) { save(KEY, h); unlock(); }
   else document.getElementById("err").textContent = "Mot de passe incorrect.";
 });
-document.getElementById("logout").addEventListener("click", () => { store(false, null); location.reload(); });
-if (store(true) === PASSWORD_HASH) unlock();
+document.getElementById("logout").addEventListener("click", () => { save(KEY, null); location.reload(); });
+if (load(KEY) === PASSWORD_HASH) unlock();
 
-// ===== AFFICHAGE DES FICHES =====
+// ===== ONGLETS =====
+const SUBS = { fiches: FICHES.length + " notions", cards: "", methodo: "La dissertation pas à pas" };
+const TITLES = { fiches: "Fiches de philo", cards: "Flashcards", methodo: "Méthodologie" };
+function showTab(v) {
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  document.getElementById("title").textContent = TITLES[v];
+  document.getElementById("sub").textContent = v === "cards" ? CARDS.length + " cartes" : SUBS[v];
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.v)));
+
+// ===== FICHES =====
 function blocHTML(b) {
   let h = "";
   if (b.titre) h += `<h3>${b.titre}</h3>`;
@@ -138,17 +268,21 @@ function blocHTML(b) {
   if (b.idee) h += `<div class="idee"><b>Idée clé :</b> ${b.idee}</div>`;
   return h;
 }
-const list = document.getElementById("list");
-list.innerHTML = FICHES.map((f, i) => `
+function accordion(items) {
+  return items.map((it, i) => `
   <details class="theme">
-    <summary><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="t">${f.titre}</span><span class="chev">›</span></summary>
-    <div class="body">
-      ${f.definition ? `<div class="def"><b>Définition :</b> ${f.definition}</div>` : ""}
-      ${f.blocs.map(blocHTML).join("")}
-      ${f.idee ? `<div class="idee"><b>Idée complémentaire :</b> ${f.idee}</div>` : ""}
-    </div>
+    <summary><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="t">${it.titre}</span><span class="chev">›</span></summary>
+    <div class="body">${it.html}</div>
   </details>`).join("");
-document.getElementById("count").textContent = FICHES.length + " notions";
+}
+const list = document.getElementById("list");
+list.innerHTML = accordion(FICHES.map(f => ({
+  titre: f.titre,
+  html: (f.definition ? `<div class="def"><b>Définition :</b> ${f.definition}</div>` : "") +
+        f.blocs.map(blocHTML).join("") +
+        (f.idee ? `<div class="idee"><b>Idée complémentaire :</b> ${f.idee}</div>` : "")
+})));
+document.getElementById("methodo").innerHTML = accordion(METHODO);
 
 const themes = [...list.querySelectorAll("details")];
 const originals = themes.map(d => d.querySelector(".body").innerHTML);
@@ -158,8 +292,6 @@ toggleBtn.addEventListener("click", () => {
   themes.forEach(d => { if (d.style.display !== "none") d.open = open; });
   toggleBtn.textContent = open ? "Tout replier" : "Tout déplier";
 });
-
-// Recherche : filtre les thèmes et surligne le mot
 function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
 document.getElementById("q").addEventListener("input", e => {
   const q = e.target.value.trim();
@@ -188,6 +320,134 @@ function highlight(root, q) {
     mid.replaceWith(m);
   });
 }
+
+// ===== FLASHCARDS =====
+// Les cartes sont fabriquées automatiquement à partir des fiches (data.js).
+const CARDS = [];
+FICHES.forEach((f, ti) => {
+  if (f.definition) CARDS.push({ t: ti, q: "Définis : " + f.titre.toLowerCase(), a: f.definition, tag: "Définition" });
+  f.blocs.forEach(b => {
+    if (b.auteurs) b.auteurs.forEach(([n, txt]) => {
+      if (b.titre === "Définitions") CARDS.push({ t: ti, q: "Définis : " + n.toLowerCase(), a: txt, tag: "Définition" });
+      else CARDS.push({ t: ti, q: "Que dit " + n + " ?", a: txt, tag: "Auteur" });
+    });
+    if (b.points) {
+      const nom = b.titre.split(" :")[0];
+      CARDS.push({ t: ti, q: "Que dit " + nom + " ?",
+        a: (b.citation ? `<p class="cit">${b.citation}</p>` : "") + "<ul>" + b.points.map(p => `<li>${p}</li>`).join("") + "</ul>" +
+           (b.idee ? `<div class="idee"><b>Idée clé :</b> ${b.idee}</div>` : ""), tag: "Auteur" });
+    }
+  });
+  if (f.idee) CARDS.push({ t: ti, q: "Idée complémentaire sur " + f.titre.toLowerCase() + " ?", a: f.idee, tag: "Idée" });
+});
+CARDS.forEach((c, i) => c.id = c.t + ":" + c.q);
+
+let progress = {};
+try { progress = JSON.parse(load(PROG) || "{}"); } catch (e) { progress = {}; }
+function saveProg() { save(PROG, JSON.stringify(progress)); }
+
+const selected = new Set(FICHES.map((_, i) => i));
+let mode = "all";
+const chips = document.getElementById("chips");
+function renderChips() {
+  const all = selected.size === FICHES.length;
+  chips.innerHTML = `<button class="chip ${all ? "on" : ""}" data-t="all">Tous</button>` +
+    FICHES.map((f, i) => {
+      const n = CARDS.filter(c => c.t === i).length;
+      return `<button class="chip ${selected.has(i) && !all ? "on" : ""}" data-t="${i}">${f.titre}<small>${n}</small></button>`;
+    }).join("");
+}
+chips.addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  const t = b.dataset.t;
+  if (t === "all") FICHES.forEach((_, i) => selected.add(i));
+  else {
+    const i = +t;
+    if (selected.size === FICHES.length) { selected.clear(); selected.add(i); }
+    else if (selected.has(i)) { selected.delete(i); if (!selected.size) FICHES.forEach((_, k) => selected.add(k)); }
+    else selected.add(i);
+  }
+  renderChips(); renderStats();
+});
+document.getElementById("modes").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  mode = b.dataset.mode;
+  document.querySelectorAll("#modes .chip").forEach(c => c.classList.toggle("on", c === b));
+});
+function pool() { return CARDS.filter(c => selected.has(c.t)); }
+function renderStats() {
+  const p = pool();
+  document.getElementById("nOk").textContent = p.filter(c => progress[c.id] === "ok").length;
+  document.getElementById("nKo").textContent = p.filter(c => progress[c.id] === "ko").length;
+  document.getElementById("nNew").textContent = p.filter(c => !progress[c.id]).length;
+}
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+let deck = [], idx = 0, missed = [];
+const setupEl = document.getElementById("setup"), playEl = document.getElementById("play"), doneEl = document.getElementById("done");
+const cardEl = document.getElementById("card"), answerEl = document.getElementById("answer");
+function startDeck(cards) {
+  if (!cards.length) { alert("Aucune carte pour ce choix."); return; }
+  deck = shuffle(cards.slice()); idx = 0; missed = [];
+  setupEl.style.display = "none"; doneEl.style.display = "none"; playEl.style.display = "block";
+  showCard();
+}
+function showCard() {
+  const c = deck[idx];
+  cardEl.classList.remove("flip"); answerEl.classList.remove("on");
+  const theme = FICHES[c.t].titre;
+  document.getElementById("fTag").textContent = theme + " · " + c.tag;
+  document.getElementById("fQ").textContent = c.q;
+  document.getElementById("bTag").textContent = theme;
+  document.getElementById("bA").innerHTML = c.a;
+  document.getElementById("pos").textContent = (idx + 1) + " / " + deck.length;
+  document.getElementById("bar").style.width = (idx / deck.length * 100) + "%";
+}
+cardEl.addEventListener("click", () => {
+  cardEl.classList.toggle("flip");
+  if (cardEl.classList.contains("flip")) answerEl.classList.add("on");
+});
+function grade(ok) {
+  const c = deck[idx];
+  progress[c.id] = ok ? "ok" : "ko"; saveProg();
+  if (!ok) missed.push(c);
+  idx++;
+  if (idx < deck.length) {
+    // On revient sur la face question sans animation, pour ne pas montrer la réponse suivante
+    const inner = cardEl.querySelector(".card-in");
+    inner.style.transition = "none";
+    showCard();
+    void inner.offsetWidth;
+    inner.style.transition = "";
+  }
+  else finish();
+}
+document.getElementById("bOk").addEventListener("click", () => grade(true));
+document.getElementById("bKo").addEventListener("click", () => grade(false));
+function finish() {
+  playEl.style.display = "none"; doneEl.style.display = "block";
+  const good = deck.length - missed.length;
+  document.getElementById("score").textContent = good + " / " + deck.length;
+  document.getElementById("doneTxt").textContent = missed.length
+    ? missed.length + " carte" + (missed.length > 1 ? "s" : "") + " à revoir."
+    : "Tout est su, bravo !";
+  document.getElementById("again").style.display = missed.length ? "block" : "none";
+}
+document.getElementById("start").addEventListener("click", () => {
+  let p = pool();
+  if (mode === "todo") p = p.filter(c => progress[c.id] !== "ok");
+  if (mode === "ko") p = p.filter(c => progress[c.id] === "ko");
+  startDeck(p);
+});
+document.getElementById("again").addEventListener("click", () => startDeck(missed));
+function backToSetup() { playEl.style.display = "none"; doneEl.style.display = "none"; setupEl.style.display = "block"; renderStats(); }
+document.getElementById("back").addEventListener("click", backToSetup);
+document.getElementById("quit").addEventListener("click", backToSetup);
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Effacer toute la progression des flashcards ?")) { progress = {}; saveProg(); renderStats(); }
+});
+renderChips(); renderStats();
+showTab("fiches");
 </script>
 </body>
 </html>
