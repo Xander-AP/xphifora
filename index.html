@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2a44">
+<meta name="robots" content="noindex">
+<title>Fiches de philo</title>
+<style>
+  :root {
+    --bg: #f6f4ef; --card: #ffffff; --ink: #1d1d1f; --muted: #6b6b70;
+    --accent: #1f2a44; --accent-soft: #e7eaf2; --line: #e4e1da; --gold: #b5893b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15171c; --card: #1e2128; --ink: #ecebe8; --muted: #9a9aa2;
+            --accent: #c9d3ec; --accent-soft: #2a3040; --line: #2d3039; --gold: #d8ae62; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 17px/1.55 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px 14px 60px; }
+
+  /* Verrou */
+  #lock { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  #lock form { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+               padding: 28px 22px; width: 100%; max-width: 360px; text-align: center; }
+  #lock h1 { font-family: Georgia, "Times New Roman", serif; font-size: 26px; margin: 0 0 6px; }
+  #lock p { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+  #lock input { width: 100%; font-size: 18px; padding: 12px 14px; border-radius: 10px;
+                border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  #lock button, .btn { margin-top: 12px; width: 100%; font-size: 17px; padding: 12px; border: 0;
+                border-radius: 10px; background: var(--accent); color: var(--bg); font-weight: 600; }
+  #err { color: #c0392b; min-height: 1.4em; margin-top: 8px; font-size: 15px; }
+  #app { display: none; }
+
+  header h1 { font-family: Georgia, "Times New Roman", serif; font-size: 30px; margin: 8px 0 2px; }
+  header .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .tools { display: flex; gap: 8px; margin-bottom: 14px; position: sticky; top: 0; z-index: 2;
+           background: var(--bg); padding: 8px 0; }
+  .tools input { flex: 1; min-width: 0; font-size: 16px; padding: 10px 12px; border-radius: 10px;
+                 border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  .tools button { font-size: 14px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line);
+                  background: var(--card); color: var(--ink); white-space: nowrap; }
+
+  details.theme { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+                  margin-bottom: 10px; overflow: hidden; }
+  details.theme > summary { list-style: none; cursor: pointer; padding: 16px 18px;
+                  display: flex; align-items: center; gap: 12px; font-weight: 650; font-size: 18px; }
+  details.theme > summary::-webkit-details-marker { display: none; }
+  summary .num { color: var(--gold); font-family: Georgia, serif; font-size: 15px; min-width: 22px; }
+  summary .t { flex: 1; }
+  summary .chev { transition: transform .2s; color: var(--muted); }
+  details[open] > summary .chev { transform: rotate(90deg); }
+  details[open] > summary { border-bottom: 1px solid var(--line); }
+  .body { padding: 6px 18px 16px; }
+  .def { background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; margin: 12px 0; font-size: 16px; }
+  .def b { color: var(--accent); }
+  h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+       margin: 18px 0 6px; }
+  .auteur { padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .auteur:last-child { border-bottom: 0; }
+  .auteur .nom { font-weight: 700; color: var(--accent); display: block; margin-bottom: 2px; }
+  .cit { font-style: italic; color: var(--muted); margin: 4px 0; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .idee { border-left: 3px solid var(--gold); padding: 4px 0 4px 10px; margin: 10px 0; }
+  .idee b { color: var(--gold); }
+  mark { background: #f7d774; color: #000; border-radius: 3px; }
+  .empty { color: var(--muted); text-align: center; padding: 30px 0; display: none; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; margin-top: 24px; }
+  footer button { background: none; border: 0; color: var(--muted); text-decoration: underline; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <form id="lockForm" autocomplete="off">
+    <h1>Fiches de philo</h1>
+    <p>Entre le mot de passe pour accéder aux fiches.</p>
+    <input id="pwd" type="password" placeholder="Mot de passe" autofocus>
+    <button type="submit">Entrer</button>
+    <div id="err"></div>
+  </form>
+</div>
+
+<div id="app" class="wrap">
+  <header>
+    <h1>Fiches de philo</h1>
+    <div class="sub" id="count"></div>
+  </header>
+  <div class="tools">
+    <input id="q" type="search" placeholder="Chercher un auteur, une notion…">
+    <button id="toggleAll">Tout déplier</button>
+  </div>
+  <main id="list"></main>
+  <div class="empty" id="empty">Aucun résultat.</div>
+  <footer><button id="logout">Verrouiller</button></footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+// ===== MOT DE PASSE =====
+// Ce n'est pas le mot de passe en clair : c'est son empreinte SHA-256.
+// Pour le changer, remplace la valeur par l'empreinte du nouveau mot de passe
+// (commande : echo -n 'ton_mot_de_passe' | shasum -a 256).
+const PASSWORD_HASH = "ac26cd88ef361bfd6735f9666d800997ee5feec4c0234aa0f12fabcccc5f7a79";
+const KEY = "fiches-philo-ok";
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function store(get, val) {
+  try { return get ? localStorage.getItem(KEY) : (val === null ? localStorage.removeItem(KEY) : localStorage.setItem(KEY, val)); }
+  catch (e) { return null; }
+}
+function unlock() {
+  document.getElementById("lock").style.display = "none";
+  document.getElementById("app").style.display = "block";
+}
+document.getElementById("lockForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const h = await sha256(document.getElementById("pwd").value);
+  if (h === PASSWORD_HASH) { store(false, h); unlock(); }
+  else document.getElementById("err").textContent = "Mot de passe incorrect.";
+});
+document.getElementById("logout").addEventListener("click", () => { store(false, null); location.reload(); });
+if (store(true) === PASSWORD_HASH) unlock();
+
+// ===== AFFICHAGE DES FICHES =====
+function blocHTML(b) {
+  let h = "";
+  if (b.titre) h += `<h3>${b.titre}</h3>`;
+  if (b.citation) h += `<p class="cit">${b.citation}</p>`;
+  if (b.points) h += "<ul>" + b.points.map(p => `<li>${p}</li>`).join("") + "</ul>";
+  if (b.auteurs) h += b.auteurs.map(([n, t]) => `<div class="auteur"><span class="nom">${n}</span>${t}</div>`).join("");
+  if (b.idee) h += `<div class="idee"><b>Idée clé :</b> ${b.idee}</div>`;
+  return h;
+}
+const list = document.getElementById("list");
+list.innerHTML = FICHES.map((f, i) => `
+  <details class="theme">
+    <summary><span class="num">${String(i + 1).padStart(2, "0")}</span><span class="t">${f.titre}</span><span class="chev">›</span></summary>
+    <div class="body">
+      ${f.definition ? `<div class="def"><b>Définition :</b> ${f.definition}</div>` : ""}
+      ${f.blocs.map(blocHTML).join("")}
+      ${f.idee ? `<div class="idee"><b>Idée complémentaire :</b> ${f.idee}</div>` : ""}
+    </div>
+  </details>`).join("");
+document.getElementById("count").textContent = FICHES.length + " notions";
+
+const themes = [...list.querySelectorAll("details")];
+const originals = themes.map(d => d.querySelector(".body").innerHTML);
+const toggleBtn = document.getElementById("toggleAll");
+toggleBtn.addEventListener("click", () => {
+  const open = !themes.some(d => d.open && d.style.display !== "none");
+  themes.forEach(d => { if (d.style.display !== "none") d.open = open; });
+  toggleBtn.textContent = open ? "Tout replier" : "Tout déplier";
+});
+
+// Recherche : filtre les thèmes et surligne le mot
+function norm(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+document.getElementById("q").addEventListener("input", e => {
+  const q = e.target.value.trim();
+  let shown = 0;
+  themes.forEach((d, i) => {
+    const body = d.querySelector(".body");
+    body.innerHTML = originals[i];
+    if (!q) { d.style.display = ""; d.open = false; shown++; return; }
+    const hit = norm(d.textContent).includes(norm(q));
+    d.style.display = hit ? "" : "none";
+    d.open = hit;
+    if (hit) { shown++; highlight(body, q); }
+  });
+  document.getElementById("empty").style.display = shown ? "none" : "block";
+});
+function highlight(root, q) {
+  const nq = norm(q);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(n => {
+    const idx = norm(n.data).indexOf(nq);
+    if (idx < 0) return;
+    const mid = n.splitText(idx); mid.splitText(q.length);
+    const m = document.createElement("mark"); m.textContent = mid.data;
+    mid.replaceWith(m);
+  });
+}
+</script>
+</body>
+</html>
